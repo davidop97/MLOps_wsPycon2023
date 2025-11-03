@@ -17,7 +17,7 @@ def load(train_size=.8):
     # Load the data
     """
       
-    # the data, split between train and test sets
+    # the data, split between train and test sets 
     train = torchvision.datasets.MNIST(root='./data', train=True, download=True)
     test = torchvision.datasets.MNIST(root='./data', train=False, download=True)
 
@@ -34,7 +34,7 @@ def load(train_size=.8):
     return datasets
 
 def load_and_log():
-    # 🚀 start a run, with a type to label it and a project it can call home
+    # 🚀 start a run, with a type to label it and a project it can call home through wandb
     with wandb.init(
         project="MLOps-Pycon2023",
         name=f"Load Raw Data ExecId-{args.IdExecution}", job_type="load-data") as run:
