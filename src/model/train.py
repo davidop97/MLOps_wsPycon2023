@@ -119,7 +119,7 @@ def get_hardest_k_examples(model, testing_set, k=32):
 
     loader = DataLoader(testing_set, 1, shuffle=False)
 
-    # get the losses and predictions for each item in the dataset
+    # get the losses and predictions for each item in the dataset loaded
     losses = None
     predictions = None
     with torch.no_grad():
