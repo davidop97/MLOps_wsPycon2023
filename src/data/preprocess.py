@@ -1,47 +1,42 @@
 import torch
-import torchvision
 from torch.utils.data import TensorDataset
-
-#testing
+from sklearn.preprocessing import StandardScaler
 import os
-import argparse
 import wandb
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--IdExecution', type=str, help='ID of the execution')
-args = parser.parse_args()
 
-if args.IdExecution:
-    print(f"IdExecution: {args.IdExecution}")
-else:
-    args.IdExecution = "testing console"
-
-def preprocess(dataset, normalize=True, expand_dims=True):
+def preprocess(dataset, normalize=True, scale_features=True):
     """
-    ## Prepare the data
+    ## Prepare the wine data
     """
     x, y = dataset.tensors
 
     if normalize:
-        # Scale images to the [0, 1] range
-        x = x.type(torch.float32) / 255
-
-    if expand_dims:
-        # Make sure images have shape (1, 28, 28)
-        x = torch.unsqueeze(x, 1)
+        # Normalize features using StandardScaler (mejor para datos tabulares)
+        scaler = StandardScaler()
+        x_numpy = x.numpy()
+        x_scaled = scaler.fit_transform(x_numpy)
+        x = torch.FloatTensor(x_scaled)
+    
+    # No necesitamos expand_dims porque no son imágenes
     
     return TensorDataset(x, y)
 
+
 def preprocess_and_log(steps):
 
-    with wandb.init(project="MLOps-Pycon2023",name=f"Preprocess Data ExecId-{args.IdExecution}", job_type="preprocess-data") as run:    
+    with wandb.init(
+        project="MLOps-Pycon2023",
+        name="Preprocess Wine Data", 
+        job_type="preprocess-data") as run:    
+        
         processed_data = wandb.Artifact(
-            "mnist-preprocess", type="dataset",
-            description="Preprocessed MNIST dataset",
+            "wine-preprocess", type="dataset",
+            description="Preprocessed Wine dataset with standardization",
             metadata=steps)
          
         # ✔️ declare which artifact we'll be using
-        raw_data_artifact = run.use_artifact('mnist-raw:latest')
+        raw_data_artifact = run.use_artifact('wine-raw:latest')
 
         # 📥 if need be, download the artifact
         raw_dataset = raw_data_artifact.download(root="./data/artifacts/")
@@ -56,13 +51,20 @@ def preprocess_and_log(steps):
 
         run.log_artifact(processed_data)
 
+
 def read(data_dir, split):
     filename = split + ".pt"
     x, y = torch.load(os.path.join(data_dir, filename))
 
     return TensorDataset(x, y)
 
-steps = {"normalize": True,
-         "expand_dims": False}
 
-preprocess_and_log(steps)
+# Steps adaptados para datos tabulares
+steps = {
+    "normalize": True,      # StandardScaler para normalizar features
+    "scale_features": True  # Mantener coherencia con normalize
+}
+
+
+if __name__ == "__main__":
+    preprocess_and_log(steps)
