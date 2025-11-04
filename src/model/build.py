@@ -3,7 +3,7 @@ import os
 import wandb
 
 # Import the model class
-from WineClassifier import WineClassifier
+from src.Classifier import WineClassifier
 
 
 # Check if the directory "./model" exists
